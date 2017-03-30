@@ -2,20 +2,22 @@ require 'torch'
 require 'nn'
 require 'optim'
 
+require 'model'
+
 opt = {
-   dataset = 'lsun',       -- imagenet / lsun / folder
+   dataset = 'folder',       -- imagenet / lsun / folder
    batchSize = 64,
-   loadSize = 96,
+   loadSize = 64,
    fineSize = 64,
    nz = 100,               -- #  of dim for Z
    ngf = 64,               -- #  of gen filters in first conv layer
    ndf = 64,               -- #  of discrim filters in first conv layer
-   nThreads = 4,           -- #  of data loading threads to use
+   nThreads = 0,           -- #  of data loading threads to use
    niter = 25,             -- #  of iter at starting learning rate
    lr = 0.0002,            -- initial learning rate for adam
    beta1 = 0.5,            -- momentum term of adam
    ntrain = math.huge,     -- #  of examples per epoch. math.huge for full dataset
-   display = 1,            -- display samples while training. 0 = false
+   display = 5561,         -- display samples while training. 0 = false
    display_id = 10,        -- display window id.
    gpu = 1,                -- gpu = 0 is CPU mode. gpu=X is GPU mode on GPU X
    name = 'experiment1',
@@ -38,17 +40,6 @@ local DataLoader = paths.dofile('data/data.lua')
 local data = DataLoader.new(opt.nThreads, opt.dataset, opt)
 print("Dataset: " .. opt.dataset, " Size: ", data:size())
 ----------------------------------------------------------------------------
-local function weights_init(m)
-   local name = torch.type(m)
-   if name:find('Convolution') then
-      m.weight:normal(0.0, 0.02)
-      m:noBias()
-   elseif name:find('BatchNormalization') then
-      if m.weight then m.weight:normal(1.0, 0.02) end
-      if m.bias then m.bias:fill(0) end
-   end
-end
-
 local nc = 3
 local nz = opt.nz
 local ndf = opt.ndf
@@ -56,52 +47,9 @@ local ngf = opt.ngf
 local real_label = 1
 local fake_label = 0
 
-local SpatialBatchNormalization = nn.SpatialBatchNormalization
-local SpatialConvolution = nn.SpatialConvolution
-local SpatialFullConvolution = nn.SpatialFullConvolution
-
-local netG = nn.Sequential()
--- input is Z, going into a convolution
-netG:add(SpatialFullConvolution(nz, ngf * 8, 4, 4))
-netG:add(SpatialBatchNormalization(ngf * 8)):add(nn.ReLU(true))
--- state size: (ngf*8) x 4 x 4
-netG:add(SpatialFullConvolution(ngf * 8, ngf * 4, 4, 4, 2, 2, 1, 1))
-netG:add(SpatialBatchNormalization(ngf * 4)):add(nn.ReLU(true))
--- state size: (ngf*4) x 8 x 8
-netG:add(SpatialFullConvolution(ngf * 4, ngf * 2, 4, 4, 2, 2, 1, 1))
-netG:add(SpatialBatchNormalization(ngf * 2)):add(nn.ReLU(true))
--- state size: (ngf*2) x 16 x 16
-netG:add(SpatialFullConvolution(ngf * 2, ngf, 4, 4, 2, 2, 1, 1))
-netG:add(SpatialBatchNormalization(ngf)):add(nn.ReLU(true))
--- state size: (ngf) x 32 x 32
-netG:add(SpatialFullConvolution(ngf, nc, 4, 4, 2, 2, 1, 1))
-netG:add(nn.Tanh())
--- state size: (nc) x 64 x 64
-
-netG:apply(weights_init)
-
-local netD = nn.Sequential()
-
--- input is (nc) x 64 x 64
-netD:add(SpatialConvolution(nc, ndf, 4, 4, 2, 2, 1, 1))
-netD:add(nn.LeakyReLU(0.2, true))
--- state size: (ndf) x 32 x 32
-netD:add(SpatialConvolution(ndf, ndf * 2, 4, 4, 2, 2, 1, 1))
-netD:add(SpatialBatchNormalization(ndf * 2)):add(nn.LeakyReLU(0.2, true))
--- state size: (ndf*2) x 16 x 16
-netD:add(SpatialConvolution(ndf * 2, ndf * 4, 4, 4, 2, 2, 1, 1))
-netD:add(SpatialBatchNormalization(ndf * 4)):add(nn.LeakyReLU(0.2, true))
--- state size: (ndf*4) x 8 x 8
-netD:add(SpatialConvolution(ndf * 4, ndf * 8, 4, 4, 2, 2, 1, 1))
-netD:add(SpatialBatchNormalization(ndf * 8)):add(nn.LeakyReLU(0.2, true))
--- state size: (ndf*8) x 4 x 4
-netD:add(SpatialConvolution(ndf * 8, 1, 4, 4))
-netD:add(nn.Sigmoid())
--- state size: 1 x 1 x 1
-netD:add(nn.View(1):setNumInputDims(3))
--- state size: 1
-
-netD:apply(weights_init)
+-- load models
+local netG = get_netG(nz, ngf, nc)
+local netD = get_netD(nc, ndf)
 
 local criterion = nn.BCECriterion()
 ---------------------------------------------------------------------------
@@ -123,23 +71,27 @@ local tm = torch.Timer()
 local data_tm = torch.Timer()
 ----------------------------------------------------------------------------
 if opt.gpu > 0 then
-   require 'cunn'
-   cutorch.setDevice(opt.gpu)
-   input = input:cuda();  noise = noise:cuda();  label = label:cuda()
-
-   if pcall(require, 'cudnn') then
-      require 'cudnn'
-      cudnn.benchmark = true
-      cudnn.convert(netG, cudnn)
-      cudnn.convert(netD, cudnn)
-   end
-   netD:cuda();           netG:cuda();           criterion:cuda()
+    require 'cunn'
+    require 'cudnn'
+    cutorch.setDevice(opt.gpu)
+    input = input:cuda()
+    noise = noise:cuda()
+    label = label:cuda()
+    netD:cuda()
+    netG:cuda()
+    criterion:cuda()
+    cudnn.benchmark = true
+    cudnn.convert(netG, cudnn)
+    cudnn.convert(netD, cudnn)
 end
 
 local parametersD, gradParametersD = netD:getParameters()
 local parametersG, gradParametersG = netG:getParameters()
 
-if opt.display then disp = require 'display' end
+if opt.display then
+    disp = require 'display'
+    disp.configure({ hostname='0.0.0.0', port=opt.display })
+end
 
 noise_vis = noise:clone()
 if opt.noise == 'uniform' then
