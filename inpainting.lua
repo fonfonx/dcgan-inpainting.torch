@@ -14,8 +14,9 @@ opt = {
     lambda = 0.004,
     loadSize = 64,
     lr = 0.03,
-    netD = 'checkpoints/treads-dcgan_4970_net_D.t7',
-    netG = 'checkpoints/treads-dcgan_4970_net_G.t7',
+    netD = 'checkpoints/celebA-soumith_9_net_D.t7',
+    netG = 'checkpoints/celebA-soumith_9_net_G.t7',
+    noise = 'normal'
     nIter = 10000,
     win_id = 1000,
 }
@@ -59,11 +60,19 @@ mask = torch.Tensor(images:size()):fill(1)
 mask:narrow(3, 16, 32):narrow(4, 16, 32):zero()
 
 z = torch.Tensor(images:size(1), 100, 1, 1)
-z:uniform(-1, 1)
+if noise == 'uniform' then
+    z:uniform(-1, 1)
+else
+    z:normal(0, 1)
+end
 
 local label = torch.Tensor(images:size(1)):fill(1)
 
 if opt.gpu > 0 then
+    netD:cuda()
+    netG:cuda()
+    cudnn.convert(netD, cudnn)
+    cudnn.convert(netG, cudnn)
     L1Criterion:cuda()
     L2Criterion:cuda()
     BCECriterion:cuda()
@@ -108,6 +117,8 @@ local loss_dL_dz = function(z)
     -- print(err, contextual_err, perceptual_err)
     return err, grads
 end
+
+print 'Inpainting...'
 
 for iter = 1, opt.nIter do
     z = optim.adam(loss_dL_dz, z, optimConfig):clamp(-1, 1)

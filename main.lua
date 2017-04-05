@@ -21,7 +21,7 @@ opt = {
    display_id = 10,        -- display window id.
    gpu = 2,                -- gpu = 0 is CPU mode. gpu=X is GPU mode on GPU X
    name = 'experiment1',
-   noise = 'normal',       -- uniform / normal
+   noise = 'uniform',       -- uniform / normal
 }
 
 -- one-line argument parser. parses enviroment variables to override the defaults
