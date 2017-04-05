@@ -5,17 +5,17 @@ require 'optim'
 torch.setdefaulttensortype('torch.FloatTensor')
 
 opt = {
-    beta1 = 0.9,
     batchSize = 64,
+    beta1 = 0.9,
     dataset = 'folder',
-    loadSize = 64,
-    fineSize = 64,
     display = 2929,
+    imgSize = 64,
     gpu = 1,
-    lambda = 0.005,
+    lambda = 0.004,
+    loadSize = 64,
     lr = 0.03,
-    netD = 'checkpoints/celebA-raw-sigmoid_46_net_D.t7',
-    netG = 'checkpoints/celebA-raw-sigmoid_46_net_G.t7',
+    netD = 'checkpoints/treads-dcgan_4970_net_D.t7',
+    netG = 'checkpoints/treads-dcgan_4970_net_G.t7',
     nIter = 10000,
     win_id = 1000,
 }
@@ -112,7 +112,7 @@ end
 for iter = 1, opt.nIter do
     z = optim.adam(loss_dL_dz, z, optimConfig):clamp(-1, 1)
     if iter % 20 == 0 then
-        local gen = netG:forward(z)  --:clamp(0, 1)
+        local gen = netG:forward(z)
         local masked_gen = torch.cmul(gen, mask)
         local comp_img = complete(masked_img, mask, z)
         display.image(comp_img, { win = opt.win_id + 2, title = "inpainted images" })

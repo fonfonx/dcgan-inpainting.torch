@@ -29,7 +29,7 @@ function get_netG(nz, ngf, nc)
     netG:add(SpatialBatchNormalization(ngf)):add(nn.ReLU(true))
     -- state size: (ngf) x 32 x 32
     netG:add(SpatialFullConvolution(ngf, nc, 4, 4, 2, 2, 1, 1))
-    netG:add(nn.Sigmoid())
+    netG:add(nn.Tanh())
     -- state size: (nc) x 64 x 64
 
     netG:apply(weights_init)

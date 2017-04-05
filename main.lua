@@ -8,7 +8,7 @@ opt = {
    dataset = 'folder',       -- imagenet / lsun / folder
    batchSize = 64,
    loadSize = 64,
-   fineSize = 64,
+   imgSize = 64,
    nz = 100,               -- #  of dim for Z
    ngf = 64,               -- #  of gen filters in first conv layer
    ndf = 64,               -- #  of discrim filters in first conv layer
@@ -17,9 +17,9 @@ opt = {
    lr = 0.0002,            -- initial learning rate for adam
    beta1 = 0.5,            -- momentum term of adam
    ntrain = math.huge,     -- #  of examples per epoch. math.huge for full dataset
-   display = 5561,         -- display samples while training. 0 = false
+   display = 5562,         -- display samples while training. 0 = false
    display_id = 10,        -- display window id.
-   gpu = 1,                -- gpu = 0 is CPU mode. gpu=X is GPU mode on GPU X
+   gpu = 2,                -- gpu = 0 is CPU mode. gpu=X is GPU mode on GPU X
    name = 'experiment1',
    noise = 'normal',       -- uniform / normal
 }
@@ -62,7 +62,7 @@ optimStateD = {
    beta1 = opt.beta1,
 }
 ----------------------------------------------------------------------------
-local input = torch.Tensor(opt.batchSize, 3, opt.fineSize, opt.fineSize)
+local input = torch.Tensor(opt.batchSize, 3, opt.imgSize, opt.imgSize)
 local noise = torch.Tensor(opt.batchSize, nz, 1, 1)
 local label = torch.Tensor(opt.batchSize)
 local errD, errG
@@ -169,7 +169,7 @@ for epoch = 1, opt.niter do
 
       -- display
       counter = counter + 1
-      if counter % 10 == 0 and opt.display then
+      if counter % 2 == 0 and opt.display then
           local fake = netG:forward(noise_vis)
           local real = data:getBatch()
           disp.image(fake, {win=opt.display_id, title=opt.name})

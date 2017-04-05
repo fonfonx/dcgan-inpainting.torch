@@ -40,7 +40,7 @@ if not os.execute('cd ' .. opt.data) then
 end
 
 local loadSize   = {3, opt.loadSize}
-local sampleSize = {3, opt.fineSize}
+local sampleSize = {3, opt.imgSize}
 
 local function loadImage(blob)
    local input = image.decompress(blob, 3, 'float')
