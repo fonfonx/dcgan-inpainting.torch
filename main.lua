@@ -5,10 +5,10 @@ require 'optim'
 require 'model'
 
 opt = {
-   dataset = 'folder',       -- imagenet / lsun / folder
-   batchSize = 64,
-   loadSize = 64,
-   imgSize = 64,
+   dataset = 'folder',     -- folder
+   batchSize = 64,         -- #  of images per batch
+   loadSize = 64,          -- rescale images to this value
+   imgSize = 64,           -- size of the images
    nz = 100,               -- #  of dim for Z
    ngf = 64,               -- #  of gen filters in first conv layer
    ndf = 64,               -- #  of discrim filters in first conv layer
@@ -17,11 +17,11 @@ opt = {
    lr = 0.0002,            -- initial learning rate for adam
    beta1 = 0.5,            -- momentum term of adam
    ntrain = math.huge,     -- #  of examples per epoch. math.huge for full dataset
-   display = 5562,         -- display samples while training. 0 = false
+   display = 5562,         -- display port during training. 0 = no display
    display_id = 10,        -- display window id.
    gpu = 2,                -- gpu = 0 is CPU mode. gpu=X is GPU mode on GPU X
-   name = 'experiment1',
-   noise = 'uniform',       -- uniform / normal
+   name = 'experiment1',   -- name of your experiment, to save the networks
+   noise = 'normal',       -- uniform / normal
 }
 
 -- one-line argument parser. parses enviroment variables to override the defaults
@@ -177,10 +177,10 @@ for epoch = 1, opt.niter do
       end
 
       -- logging
-      if ((i-1) / opt.batchSize) % 1 == 0 then
+      if ((i - 1) / opt.batchSize) % 1 == 0 then
          print(('Epoch: [%d][%8d / %8d]\t Time: %.3f  DataTime: %.3f  '
                    .. '  Err_G: %.4f  Err_D: %.4f'):format(
-                 epoch, ((i-1) / opt.batchSize),
+                 epoch, ((i - 1) / opt.batchSize),
                  math.floor(math.min(data:size(), opt.ntrain) / opt.batchSize),
                  tm:time().real, data_tm:time().real,
                  errG and errG or -1, errD and errD or -1))
