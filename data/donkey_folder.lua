@@ -1,4 +1,7 @@
 --[[
+    This file is a modified version of the one from dcgan.torch
+    (see https://github.com/soumith/dcgan.torch/blob/master/data/donkey_folder.lua).
+
     Copyright (c) 2015-present, Facebook, Inc.
     All rights reserved.
 
@@ -66,8 +69,6 @@ local trainHook = function(self, path)
    local out = image.crop(input, w1, h1, w1 + oW, h1 + oH)
    assert(out:size(2) == oW)
    assert(out:size(3) == oH)
-   -- do hflip with probability 0.5
-   -- if torch.uniform() > 0.5 then out = image.hflip(out); end
    out:mul(2):add(-1) -- make it [0, 1] -> [-1, 1]
    return out
 end

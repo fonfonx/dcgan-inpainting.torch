@@ -1,3 +1,9 @@
+--[[
+    This file is a modified version of the one from dcgan.torch
+    (see https://github.com/soumith/dcgan.torch/blob/master/data/data.lua).
+
+]]--
+
 local Threads = require 'threads'
 Threads.serialization('threads.sharedserialize')
 
@@ -16,11 +22,6 @@ function data.new(n, dataset_name, opt_)
    local donkey_file
    if dataset_name == 'imagenet' or dataset_name == 'folder' then
        donkey_file = 'donkey_folder.lua'
-   elseif dataset_name == 'rrrrr' then
-       donkey_file = 'donkey_rrrrr.lua'
-   elseif dataset_name == 'lsun' then
-       donkey_file = 'donkey_lsun.lua'
-       if n > 6 then n = 6 end -- lmdb complains beyond 6 donkeys. wtf.
    else
       error('Unknown dataset: ' .. dataset_name)
    end
