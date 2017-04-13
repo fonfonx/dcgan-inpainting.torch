@@ -20,6 +20,7 @@ opt = {
     nIter = 2000,
     noise = 'normal',
     nz = 100,
+    showEvery = 20,
     winId = 1000,
 }
 
@@ -142,7 +143,7 @@ for iter = 1, opt.nIter do
     if opt.noise == 'uniform' then z = z:clamp(-1, 1) end
 
     -- display in browser and save images
-    if iter % 20 == 0 then
+    if iter % opt.showEvery == 0 then
         local gen = netG:forward(z)
         local masked_gen = torch.cmul(gen, mask)
         local comp_img = complete(masked_img, mask, z)
@@ -152,8 +153,10 @@ for iter = 1, opt.nIter do
             display.image(gen, { win = opt.winId + 3, title = "generated images" })
         end
 
-        image.save((save_dir .. '/image_%03d.jpg'):format(iter / 20), image.toDisplayTensor({ input = comp_img, nrow = 8 }))
+        image.save((save_dir .. '/image_%03d.jpg'):format(iter / opt.showEvery), image.toDisplayTensor({ input = comp_img, nrow = 8 }))
 
-        xlua.progress(iter / 20, opt.nIter / 20)
+        xlua.progress(iter / opt.showEvery, opt.nIter / opt.showEvery)
     end
 end
+
+print("Completed images have been saved into " .. save_dir .. ".")
