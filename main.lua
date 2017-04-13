@@ -24,8 +24,8 @@ opt = {
    beta1 = 0.5,            -- momentum term of adam
    ntrain = math.huge,     -- #  of examples per epoch. math.huge for full dataset
    display = 5562,         -- display port during training. 0 = no display
-   display_id = 10,        -- display window id.
-   gpu = 2,                -- gpu = 0 is CPU mode. gpu=X is GPU mode on GPU X
+   winId = 10,             -- display window id.
+   gpu = 1,                -- gpu = 0 is CPU mode. gpu=X is GPU mode on GPU X
    name = 'experiment1',   -- name of your experiment, to save the networks
    noise = 'normal',       -- uniform / normal
 }
@@ -178,8 +178,8 @@ for epoch = 1, opt.niter do
       if counter % 2 == 0 and opt.display then
           local fake = netG:forward(noise_vis)
           local real = data:getBatch()
-          disp.image(fake, {win=opt.display_id, title=opt.name})
-          disp.image(real, {win=opt.display_id * 3, title=opt.name})
+          disp.image(fake, {win=opt.winId, title=opt.name})
+          disp.image(real, {win=opt.winId * 3, title=opt.name})
       end
 
       -- logging

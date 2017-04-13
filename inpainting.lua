@@ -10,7 +10,7 @@ opt = {
     beta1 = 0.9,            -- beta param for adam
     dataset = 'folder',     -- folder (see data/donkey_folder.lua)
     display = 2929,
-    gpu = 2,
+    gpu = 1,
     imgSize = 64,
     lambda = 0.002,
     loadSize = 64,
@@ -20,7 +20,7 @@ opt = {
     nIter = 2000,
     noise = 'normal',
     nz = 100,
-    win_id = 1000,
+    winId = 1000,
 }
 
 opt = xlua.envparams(opt)
@@ -129,9 +129,9 @@ local save_dir = 'completed/' .. opt.name
 paths.mkdir(save_dir)
 
 if display then
-    display.image(images, { win = opt.win_id, title = "original images" })
-    display.image(masked_img, { win = opt.win_id + 1, title = "masked images" })
-    display.image(complete(masked_img, mask, z), { win = opt.win_id + 2, title = "inpainted images" })
+    display.image(images, { win = opt.winId, title = "original images" })
+    display.image(masked_img, { win = opt.winId + 1, title = "masked images" })
+    display.image(complete(masked_img, mask, z), { win = opt.winId + 2, title = "inpainted images" })
 end
 
 image.save(save_dir .. '/image_000.jpg', image.toDisplayTensor({ input = masked_img, nrow = 8 }))
@@ -147,9 +147,9 @@ for iter = 1, opt.nIter do
         local masked_gen = torch.cmul(gen, mask)
         local comp_img = complete(masked_img, mask, z)
         if display then
-            display.image(comp_img, { win = opt.win_id + 2, title = "inpainted images" })
-            display.image(masked_gen, { win = opt.win_id + 4, title = "masked generated images" })
-            display.image(gen, { win = opt.win_id + 3, title = "generated images" })
+            display.image(comp_img, { win = opt.winId + 2, title = "inpainted images" })
+            display.image(masked_gen, { win = opt.winId + 4, title = "masked generated images" })
+            display.image(gen, { win = opt.winId + 3, title = "generated images" })
         end
 
         image.save((save_dir .. '/image_%03d.jpg'):format(iter / 20), image.toDisplayTensor({ input = comp_img, nrow = 8 }))

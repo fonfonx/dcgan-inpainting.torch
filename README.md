@@ -40,3 +40,17 @@ th -ldisplay.start <PORT_NUMBER> 0.0.0.0
 to launch a server on the port you chose. You can access it in your browser with the url http://localhost:PORT_NUMBER.
 
 To train your network or for completion add the variable `display=<PORT_NUMBER>` to the list of options.
+
+## Optional parameters
+
+In your command line instructions you can specify several parameters (for example the display port number), here are some of them:
++ `noise` which can be either `uniform` or `normal` indicates the prior distribution from which the samples are generated
++ `batchSize` is the size of the batch used for training or the number of images to reconstruct
++ `name` is the name you want to use to save your networks or the generated images
++ `gpu` specifies if the computations are done on the GPU or not. Set it to 0 to use the CPU (not recommended, see below) and to n to use the nth GPU you have (1 is the default value)
++ `lr` is the learning rate
++ `loadSize` is the size to use to scale the images. 0 means no rescale
+
+## About the GPU
+
+It is highly recommended to do the computations on the GPU since it will be much faster. However I provided networks that can be used without gpu in the `checkpoints/` folder (the ones with "float" in their name).
